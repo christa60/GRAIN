@@ -64,8 +64,6 @@ from trl import SFTConfig, SFTTrainer
 from minnorm_trainer import MinNormSFTTrainer
 from huggingface_hub import login
 
-login(token="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")
-
 
 # ---------------------------------------------------------------------------
 # Prompt formatting  —  LLAMA-3.1-INSTRUCT TEMPLATE
@@ -266,7 +264,7 @@ def build_datasets(args: ScriptArgs):
 
     train_ds = raw["train"]
     # pqa_labeled only has a train split; carve out 20% as a validation set
-    split    = train_ds.train_test_split(test_size=0.2, 42)
+    split    = train_ds.train_test_split(test_size=0.2, seed=42)
     train_ds = split["train"]
     eval_ds  = split["test"]
 
