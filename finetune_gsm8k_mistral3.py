@@ -64,7 +64,6 @@ from transformers import Mistral3ForConditionalGeneration, MistralCommonBackend,
 from trl import SFTConfig, SFTTrainer
 from huggingface_hub import login
 
-login(token="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")
 
 
 

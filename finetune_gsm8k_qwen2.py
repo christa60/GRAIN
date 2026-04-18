@@ -53,7 +53,6 @@ from trl import SFTConfig, SFTTrainer
 from custom_trainer import DeviceSFTTrainer, AcrossBatchSFTTrainer, MinNormSFTTrainer
 from huggingface_hub import login
 
-login(token="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")
 
 
 # ---------------------------------------------------------------------------

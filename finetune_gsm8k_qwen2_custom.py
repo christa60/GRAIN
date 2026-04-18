@@ -53,7 +53,6 @@ from trl import SFTConfig, SFTTrainer
 from minnorm_trainer import MinNormSFTTrainer
 from huggingface_hub import login
 
-login(token="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")
 
 
 # ---------------------------------------------------------------------------
