@@ -129,16 +129,30 @@ class SWACallback(TrainerCallback):
                 self._epoch_at_step(state) - 1
             )
         return (self._steps_since_update >= freq)
+    @staticmethod
+    def _make_avg_fn(decay: float):
+        """
+        Dtype-safe averaging for BF16/FP16 models.
+        PyTorchs built-in avg_fn uses _foreach_addcdiv_ which raises
+        "Integer division with addcdiv" on BF16/FP16 parameters.
+        We cast to float32, average, then cast back.
+        uniform SWA: avg = avg + (param - avg) / (n_averaged + 1)
+        EMA:         avg = decay * avg + (1 - decay) * param
+        """
+        if decay > 0:
+            def ema_avg_fn(averaged, current, n_averaged):
+                return (decay * averaged.float() + (1.0 - decay) * current.float()).to(averaged.dtype)
+            return ema_avg_fn
+        else:
+            def swa_avg_fn(averaged, current, n_averaged):
+                a, c = averaged.float(), current.float()
+                return (a + (c - a) / (n_averaged.float() + 1.0)).to(averaged.dtype)
+            return swa_avg_fn
  
     def _init_swa(self, model: torch.nn.Module, optimizer: torch.optim.Optimizer):
         """Lazily initialise the AveragedModel and SWALR scheduler."""
         decay = self.cfg.swa_ema_decay
-        if decay > 0:
-            # EMA-style averaging
-            avg_fn = AveragedModel.get_ema_avg_fn(decay)
-        else:
-            avg_fn = None  # uniform SWA (PyTorch default)
- 
+        avg_fn = self._make_avg_fn(decay)
         self.swa_model = AveragedModel(model, avg_fn=avg_fn)
  
         anneal_epochs = max(self.cfg.swa_anneal_epochs, 1)
